@@ -1,0 +1,63 @@
+services:
+  nginx:
+    container_name: nginx
+    build: ./requirements/nginx #marina le mete una linea context
+    ports:
+      - "443:443"
+    volumes:
+      - ./src/nginx/conf:/etc/nginx/conf.d
+    depends_on:
+      - wordpress
+    networks:
+      - inception
+#    restart: always
+    restart: no
+    # me falta env_files y
+    # en orden : container_name, build, network, depends_on, ports, volumes
+    #           env_file, restart
+
+  wordpress:
+    container_name: wordpress
+    build: ./requirements/wordpress
+    env_file: .env
+    ports:
+      - "9000:9000"
+    depends_on:
+      - mariadb
+    networks:
+      - inception
+#    restart: always
+    restart: no
+    volumes:
+      - wordpress_data:/var/www/html
+    #esto lo tiene la gente de otra fora, invesitgar bien
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=$MYSQL_PASSWORD
+    # volumes, y como interacciona con lo de abajo
+
+  mariadb:
+    container_name: mariadb
+    build: ./requirements/mariadb
+    env_file: .env
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - inception
+    ports:
+      - "3306:3306"
+#    restart: always
+    restart: no
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=$MYSQL_PASSWORD
+
+networks:
+  inception:
+    driver: bridge #revisar esto
+
+volumes:
+  db_data:
+  wordpress_data:
