@@ -1,4 +1,0 @@
-make down
-
-docker builder prune -af
-make up
